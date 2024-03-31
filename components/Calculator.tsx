@@ -15,17 +15,26 @@ const Calculator = () => {
   const [eth, setEth] = useState('');
   const [sol, setSol] = useState('');
   const [usd, setUsd] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPrices = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await fetch('/api/coins', { next: { revalidate: 1 } });
-        const data: CoinPrices = await response.json();
-        setPrices(data);
-      } catch (error) {
-        console.error('Failed to fetch coin prices', error);
-      }
-    };
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data: CoinPrices = await response.json();
+          setPrices(data);
+        } catch (error) {
+          setError('Failed to load. Please try again later.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
     fetchPrices();
   }, []);
@@ -72,6 +81,14 @@ const Calculator = () => {
       setEth((numericValue / prices.ethereum.usd).toString());
       setSol((numericValue / prices.solana.usd).toString());
     }
+  }
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
   }
 
   return (
