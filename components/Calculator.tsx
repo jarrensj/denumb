@@ -19,7 +19,7 @@ const Calculator = () => {
   useEffect(() => {
     const fetchPrices = async () => {
       try {
-        const response = await fetch('/api/coins');
+        const response = await fetch('/api/coins', { next: { revalidate: 1 } });
         const data: CoinPrices = await response.json();
         setPrices(data);
       } catch (error) {
